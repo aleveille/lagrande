@@ -1,0 +1,27 @@
+From: https://raw.githubusercontent.com/Netflix/atlas/v1.5.x/scripts/publish-test.sh
+
+
+Content-Type: application/json
+{
+  "tags": {
+    "nf.node": "$node"
+  },
+  "metrics": [
+    {
+      "tags": {
+        "name": "anwserToEverything",
+        "atlas.dstype": "gauge"
+      },
+      "timestamp": $timestamp,
+      "value": 42
+    },
+    {
+      "tags": {
+        "name": "randomValue",
+        "atlas.dstype": "gauge"
+      },
+      "timestamp": $timestamp,
+      "value": $RANDOM
+    }
+  ]
+}
