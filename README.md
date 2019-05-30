@@ -6,6 +6,7 @@ Lagrande is a load-testing tool for your TSDB. It is written in Go and it was de
 * [Atlas](https://github.com/Netflix/atlas)
 * [Carbon plaintext protocol](https://graphite.readthedocs.io/en/latest/feeding-carbon.html#the-plaintext-protocol)
 * [InfluxDB](https://www.influxdata.com/products/influxdb-overview/)
+* [M3DB](https://m3db.io/)
 
 ## Kinds of metrics:
 * Integer fixed value
