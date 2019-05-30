@@ -12,6 +12,7 @@ import (
 )
 
 type floatRandom struct {
+	name       *[]byte
 	sharedData *floatRandomSharedData
 }
 
@@ -86,11 +87,17 @@ func NewFloatRandomGenerator(config CLIConfig, tags *[]byte, f *formatter.Format
 
 // Clone the current generator into a new struct with the current value for value and the same pointer for sharedData
 func (g floatRandom) Clone(newName string) Generator {
-	return &floatRandom{sharedData: g.sharedData}
+	newg := floatRandom{sharedData: g.sharedData}
+	newNameBytes := []byte(newName)
+	newg.name = &newNameBytes
+	return &newg
 }
 
 // Return the name of the generator (as specificed on the command-line)
 func (g *floatRandom) GetName() string {
+	if g.name != nil {
+		return string(*g.name)
+	}
 	return string(*g.sharedData.metadata.Name)
 }
 
@@ -106,6 +113,7 @@ func (g *floatRandom) GenerateMetric() *metric.Metric {
 
 	retMetric = &metric.Metric{
 		Metadata:  g.sharedData.metadata,
+		Name:      g.name,
 		Value:     float64ToByteArrPtr(rand.Float64()*(g.sharedData.max-g.sharedData.min) + g.sharedData.min),
 		Timestamp: &timestamp}
 

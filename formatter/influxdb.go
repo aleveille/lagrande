@@ -31,7 +31,7 @@ func (f *influxdb) FormatData(metrics *[]*metric.Metric) *[]*[]byte {
 
 	i := 0
 	for ; i < len(*metrics); i++ {
-		r[(4*i)+3] = (*metrics)[i].Metadata.Name
+		r[(4*i)+3] = (*metrics)[i].Name
 		r[(4*i)+3+1] = &byteForEqual
 		r[(4*i)+3+2] = (*metrics)[i].Value
 		r[(4*i)+3+3] = &byteForComma // The last comma will be overriden by a space

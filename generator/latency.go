@@ -14,6 +14,7 @@ import (
 )
 
 type latencyDistribution struct {
+	name       *[]byte
 	sharedData *latencyDistributionSharedData
 }
 
@@ -135,11 +136,17 @@ func NewLatencyDistributionGenerator(config CLIConfig, tags *[]byte, f *formatte
 
 // Clone the current generator into a new struct with the current value for value and the same pointer for sharedData
 func (g latencyDistribution) Clone(newName string) Generator {
-	return &latencyDistribution{sharedData: g.sharedData}
+	newg := latencyDistribution{sharedData: g.sharedData}
+	newNameBytes := []byte(newName)
+	newg.name = &newNameBytes
+	return &newg
 }
 
 // Return the name of the generator (as specificed on the command-line)
 func (g *latencyDistribution) GetName() string {
+	if g.name != nil {
+		return string(*g.name)
+	}
 	return string(*g.sharedData.metadata.Name)
 }
 
@@ -160,6 +167,7 @@ func (g *latencyDistribution) GenerateMetric() *metric.Metric {
 
 	retMetric := &metric.Metric{
 		Metadata:  g.sharedData.metadata,
+		Name:      g.name,
 		Value:     float64ToByteArrPtr(value),
 		Timestamp: &timestamp,
 	}

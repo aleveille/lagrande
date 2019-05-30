@@ -50,7 +50,7 @@ func (f *m3db) FormatData(metrics *[]*metric.Metric) *[]*[]byte {
 	r[4] = &bytesIdName
 	r[5] = &byteForQuote
 	r[6] = &byteForComma
-	r[7] = f.finalizeTags((*metrics)[0].Metadata.Tags, (*metrics)[0].Metadata.Name)
+	r[7] = f.finalizeTags((*metrics)[0].Metadata.Tags, (*metrics)[0].Name)
 	r[8] = &bytesForCommaDatapointColonTimestampColon
 	byteTs := []byte(fmt.Sprintf("%d", *((*metrics)[0].Timestamp)/1000/1000/1000))
 	r[9] = &byteTs

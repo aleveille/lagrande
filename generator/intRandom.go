@@ -13,6 +13,7 @@ import (
 )
 
 type intRandom struct {
+	name       *[]byte
 	sharedData *intRandomSharedData
 }
 
@@ -93,17 +94,23 @@ func NewIntRandomGenerator(config CLIConfig, tags *[]byte, f *formatter.Formatte
 
 // Clone the current generator into a new struct with the current value for value and the same pointer for sharedData
 func (g intRandom) Clone(newName string) Generator {
-	return &intRandom{sharedData: g.sharedData}
+	newg := intRandom{sharedData: g.sharedData}
+	newNameBytes := []byte(newName)
+	newg.name = &newNameBytes
+	return &newg
 }
 
 // Return the name of the generator (as specificed on the command-line)
 func (g *intRandom) GetName() string {
+	if g.name != nil {
+		return string(*g.name)
+	}
 	return string(*g.sharedData.metadata.Name)
 }
 
 // Return a human-readable description of the generator
 func (g *intRandom) ToString() string {
-	return fmt.Sprintf("Random int generator (%s) between %d and %d", g.sharedData.metadata.Name, g.sharedData.min, g.sharedData.max)
+	return fmt.Sprintf("Random int generator (%s) between %d and %d", *g.sharedData.metadata.Name, g.sharedData.min, g.sharedData.max)
 }
 
 // Generates a metric struct with a value computed from the generator's rules
@@ -119,6 +126,7 @@ func (g *intRandom) GenerateMetric() *metric.Metric {
 
 		retMetric = &metric.Metric{
 			Metadata:  g.sharedData.metadata,
+			Name:      g.name,
 			Value:     g.sharedData.cache[randomInt-g.sharedData.min],
 			Timestamp: &timestamp}
 
@@ -128,6 +136,7 @@ func (g *intRandom) GenerateMetric() *metric.Metric {
 	byteArr := []byte(fmt.Sprintf("%d", randomInt))
 	retMetric = &metric.Metric{
 		Metadata:  g.sharedData.metadata,
+		Name:      g.name,
 		Value:     &byteArr,
 		Timestamp: &timestamp}
 

@@ -28,7 +28,7 @@ func (f *carbon) FormatData(metrics *[]*metric.Metric) *[]*[]byte {
 	for i, m := range *metrics {
 		byteTs := []byte(fmt.Sprintf("%d", *(m.Timestamp)/1000/1000/1000))
 
-		r[(7 * i)] = m.Metadata.Name
+		r[(7 * i)] = m.Name
 		r[(7*i)+1] = m.Metadata.Tags
 		r[(7*i)+2] = &byteForSpace
 		r[(7*i)+3] = m.Value

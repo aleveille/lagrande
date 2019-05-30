@@ -28,7 +28,7 @@ func TestAtlasSingleMetricFormat(t *testing.T) {
 	byteArrValue := []byte(fmt.Sprintf("%d", 42))
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC).UnixNano()
 
-	m := metric.Metric{Metadata: &staticMeta, Value: &byteArrValue, Timestamp: &timestamp}
+	m := metric.Metric{Metadata: &staticMeta, Name: &byteName, Value: &byteArrValue, Timestamp: &timestamp}
 	mArr := []*metric.Metric{&m}
 
 	formattedMetric := atlasFormatter.FormatData(&mArr)
@@ -60,8 +60,8 @@ func TestAtlasTwoMetricsFormat(t *testing.T) {
 	byteArrValue2 := []byte(fmt.Sprintf("%d", 84))
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC).UnixNano()
 
-	m1 := metric.Metric{Metadata: &staticMeta1, Value: &byteArrValue1, Timestamp: &timestamp}
-	m2 := metric.Metric{Metadata: &staticMeta2, Value: &byteArrValue2, Timestamp: &timestamp}
+	m1 := metric.Metric{Metadata: &staticMeta1, Name: &byteName1, Value: &byteArrValue1, Timestamp: &timestamp}
+	m2 := metric.Metric{Metadata: &staticMeta2, Name: &byteName2, Value: &byteArrValue2, Timestamp: &timestamp}
 	mArr := []*metric.Metric{&m1, &m2}
 
 	formattedMetric := atlasFormatter.FormatData(&mArr)
@@ -90,7 +90,7 @@ func TestInfluxDBSingleMetricFormat(t *testing.T) {
 	byteArrValue := []byte(fmt.Sprintf("%d", 42))
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC).UnixNano()
 
-	m := metric.Metric{Metadata: &staticMeta, Value: &byteArrValue, Timestamp: &timestamp}
+	m := metric.Metric{Metadata: &staticMeta, Name: &byteName, Value: &byteArrValue, Timestamp: &timestamp}
 	mArr := []*metric.Metric{&m}
 
 	formattedMetric := influxdbFormatter.FormatData(&mArr)
@@ -122,8 +122,8 @@ func TestInfluxDBTwoMetricsFormat(t *testing.T) {
 	byteArrValue2 := []byte(fmt.Sprintf("%d", 84))
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC).UnixNano()
 
-	m1 := metric.Metric{Metadata: &staticMeta1, Value: &byteArrValue1, Timestamp: &timestamp}
-	m2 := metric.Metric{Metadata: &staticMeta2, Value: &byteArrValue2, Timestamp: &timestamp}
+	m1 := metric.Metric{Metadata: &staticMeta1, Name: &byteName1, Value: &byteArrValue1, Timestamp: &timestamp}
+	m2 := metric.Metric{Metadata: &staticMeta2, Name: &byteName2, Value: &byteArrValue2, Timestamp: &timestamp}
 	mArr := []*metric.Metric{&m1, &m2}
 
 	formattedMetric := influxdbFormatter.FormatData(&mArr)
@@ -152,7 +152,7 @@ func TestCarbonSingleMetricNoTagsFormat(t *testing.T) {
 	byteArrValue := []byte(fmt.Sprintf("%d", 42))
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC).UnixNano()
 
-	m := metric.Metric{Metadata: &staticMeta, Value: &byteArrValue, Timestamp: &timestamp}
+	m := metric.Metric{Metadata: &staticMeta, Name: &byteName, Value: &byteArrValue, Timestamp: &timestamp}
 	mArr := []*metric.Metric{&m}
 
 	formattedMetric := carbonFormatter.FormatData(&mArr)
@@ -181,7 +181,7 @@ func TestCarbonSingleMetricWithTagsFormat(t *testing.T) {
 	byteArrValue := []byte(fmt.Sprintf("%d", 42))
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC).UnixNano()
 
-	m := metric.Metric{Metadata: &staticMeta, Value: &byteArrValue, Timestamp: &timestamp}
+	m := metric.Metric{Metadata: &staticMeta, Name: &byteName, Value: &byteArrValue, Timestamp: &timestamp}
 	mArr := []*metric.Metric{&m}
 
 	formattedMetric := carbonFormatter.FormatData(&mArr)
@@ -213,8 +213,8 @@ func TestCarbonSingleTwoMetricsWithTagsFormat(t *testing.T) {
 	byteArrValue2 := []byte(fmt.Sprintf("%d", 84))
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC).UnixNano()
 
-	m1 := metric.Metric{Metadata: &staticMeta1, Value: &byteArrValue1, Timestamp: &timestamp}
-	m2 := metric.Metric{Metadata: &staticMeta2, Value: &byteArrValue2, Timestamp: &timestamp}
+	m1 := metric.Metric{Metadata: &staticMeta1, Name: &byteName1, Value: &byteArrValue1, Timestamp: &timestamp}
+	m2 := metric.Metric{Metadata: &staticMeta2, Name: &byteName2, Value: &byteArrValue2, Timestamp: &timestamp}
 	mArr := []*metric.Metric{&m1, &m2}
 
 	formattedMetric := carbonFormatter.FormatData(&mArr)
@@ -245,7 +245,7 @@ func TestM3DBSingleMetricWithTagsFormat(t *testing.T) {
 	byteArrValue := []byte(fmt.Sprintf("%d", 42))
 	timestamp := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC).UnixNano()
 
-	m := metric.Metric{Metadata: &staticMeta, Value: &byteArrValue, Timestamp: &timestamp}
+	m := metric.Metric{Metadata: &staticMeta, Name: &byteName, Value: &byteArrValue, Timestamp: &timestamp}
 	mArr := []*metric.Metric{&m}
 
 	formattedMetric := m3dbFormatter.FormatData(&mArr)

@@ -8,6 +8,7 @@ type MetricStaticMetadata struct {
 
 type Metric struct {
 	Metadata  *MetricStaticMetadata
+	Name      *[]byte
 	Tags      *[]byte
 	Value     *[]byte
 	Timestamp *int64

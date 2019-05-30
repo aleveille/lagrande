@@ -489,11 +489,11 @@ func spawnWorker(id int, statsChan chan<- emissionStat) {
 	}
 }
 
-func cloneDefaultGenerators(metricNamespacePrefix *string, metricNamespaceSuffix *string) []generator.Generator {
+func cloneDefaultGenerators(workerMetricNamespacePrefix *string, workerMetricNamespaceSuffix *string) []generator.Generator {
 	var workerGeneratorsArr []generator.Generator
 	workerGeneratorsArr = make([]generator.Generator, len(generatorsArr), len(generatorsArr))
 	for i, gen := range generatorsArr {
-		metricName := fmt.Sprintf("%s%s%s", *metricNamespacePrefix, gen.GetName(), *metricNamespaceSuffix)
+		metricName := fmt.Sprintf("%s%s%s", *workerMetricNamespacePrefix, gen.GetName(), *workerMetricNamespaceSuffix)
 		workerGeneratorsArr[i] = gen.Clone(metricName)
 	}
 

@@ -12,6 +12,7 @@ import (
 )
 
 type intCounter struct {
+	name       *[]byte
 	value      int
 	sharedData *intCounterSharedData
 }
@@ -126,11 +127,17 @@ func NewIntCounterGenerator(config CLIConfig, tags *[]byte, f *formatter.Formatt
 
 // Clone the current generator into a new struct with the current value for value and the same pointer for sharedData
 func (g intCounter) Clone(newName string) Generator {
-	return &intCounter{value: g.value, sharedData: g.sharedData}
+	newg := intCounter{value: g.value, sharedData: g.sharedData}
+	newNameBytes := []byte(newName)
+	newg.name = &newNameBytes
+	return &newg
 }
 
 // Return the name of the generator (as specificed on the command-line)
 func (g *intCounter) GetName() string {
+	if g.name != nil {
+		return string(*g.name)
+	}
 	return string(*g.sharedData.metadata.Name)
 }
 
@@ -166,6 +173,7 @@ func (g *intCounter) GenerateMetric() *metric.Metric {
 	if g.sharedData.increment == 0 { // Static value, use cache[0] right away
 		retMetric = &metric.Metric{
 			Metadata:  g.sharedData.metadata,
+			Name:      g.name,
 			Value:     g.sharedData.cache[0],
 			Timestamp: &timestamp,
 		}
@@ -178,6 +186,7 @@ func (g *intCounter) GenerateMetric() *metric.Metric {
 
 			retMetric = &metric.Metric{
 				Metadata:  g.sharedData.metadata,
+				Name:      g.name,
 				Value:     g.sharedData.cache[(g.value - g.sharedData.min)],
 				Timestamp: &timestamp,
 			}
@@ -185,6 +194,7 @@ func (g *intCounter) GenerateMetric() *metric.Metric {
 			byteArr := intToByteArrPtr(g.value)
 			retMetric = &metric.Metric{
 				Metadata:  g.sharedData.metadata,
+				Name:      g.name,
 				Value:     byteArr,
 				Timestamp: &timestamp}
 		}

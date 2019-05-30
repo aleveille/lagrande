@@ -64,7 +64,7 @@ func (f *atlas) FormatData(metrics *[]*metric.Metric) *[]*[]byte {
 		} else {
 			r[(7*i)+4] = &bytesForAtlasMetricContinue
 		}
-		metricTags := fmt.Sprintf("name=%s, atlas.dstype=%s", *(*metrics)[i].Metadata.Name, *(*metrics)[i].Metadata.MetricType)
+		metricTags := fmt.Sprintf("name=%s, atlas.dstype=%s", *(*metrics)[i].Name, *(*metrics)[i].Metadata.MetricType)
 		r[(7*i)+1+4] = f.FormatTags(&metricTags)
 		r[(7*i)+2+4] = &bytesForCommaTimestampColon
 		byteTs := []byte(fmt.Sprintf("%d", *((*metrics)[i].Timestamp)/1000))
