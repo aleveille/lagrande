@@ -28,6 +28,9 @@ import (
 //   Potentially: Support destroying && creating workers over time (to simulate hosts going down, coming up)
 
 var (
+	version   string
+	buildDate string
+
 	// CLI flags
 	hostname              string
 	endpoint              string
@@ -41,6 +44,7 @@ var (
 	metricNamespacePrefix string
 	metricNamespaceSuffix string
 	tags                  string
+	versionFlag           bool
 	workersCount          int
 	workersInterval       string
 
@@ -91,12 +95,18 @@ func init() {
 	flag.StringVar(&metricNamespacePrefix, "metricNamespacePrefix", "lagrande.", "How to namespace metrics. Eg: 'lagrande.mymetric'. Support text and placeholders: NODENAME, WORKERNUM, WORKERFULLNAME")
 	flag.StringVar(&metricNamespaceSuffix, "metricNamespaceSuffix", "-WORKERNUM", "How to namespace metrics. Eg: 'mymetric-6'. Support text and placeholders: NODENAME, WORKERNUM, WORKERFULLNAME")
 	flag.StringVar(&tags, "tags", "", "Comma-delimited list of tags of format name=value. Support placeholders: NODENAME, PID, WORKERNUM, WORKERFULLNAME, METRICNAME") // If defaulting to 'node=NODENAME,process=lagrande,thread=WORKERFULLNAME', make sure it plays nice with TSDB that don't support tags
+	flag.BoolVar(&versionFlag, "version", false, "Print version information")
 	flag.IntVar(&workersCount, "workers", 10, "Number of parallel workers that will send metrics")
 	flag.StringVar(&workersInterval, "workersInterval", "1s", "Wait time between starting workers, must be a >= 0 Go Duration")
 }
 
 func main() {
 	flag.Parse()
+
+	if versionFlag {
+		fmt.Printf("Lagrande version %s\nBuild date: %s\n", version, buildDate)
+		os.Exit(0)
+	}
 
 	switch logLevel {
 	case "trace":
