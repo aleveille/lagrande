@@ -1,6 +1,7 @@
 package publisher
 
 import (
+	"errors"
 	"net"
 	"time"
 
@@ -32,6 +33,9 @@ func (p *tcpPublisher) connect() {
 func (p *tcpPublisher) PublishBytes(byteArrays *[]*[]byte) error {
 	if p.conn == nil {
 		p.connect()
+		if p.conn == nil {
+			return errors.New("couldn't successfully open TCP connection")
+		}
 	}
 
 	p.conn.SetWriteDeadline(time.Now().Add(400 * time.Millisecond))
