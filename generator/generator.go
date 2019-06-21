@@ -10,7 +10,7 @@ type CLIConfig struct {
 // Generator is the common interface to all generators
 type Generator interface {
 	GenerateMetric() *metric.Metric
-	Clone(newName string) Generator
+	Clone(newName string, specificTags *[]byte) Generator
 	GetName() string
 	ToString() string
 }

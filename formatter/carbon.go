@@ -23,18 +23,19 @@ func NewCarbonFormatter() Formatter {
 // Format according to Carbon protocol:
 // metric_path value timestamp\n
 func (f *carbon) FormatData(metrics *[]*metric.Metric) *[]*[]byte {
-	r := make([]*[]byte, 7*len(*metrics))
+	r := make([]*[]byte, 8*len(*metrics))
 
 	for i, m := range *metrics {
 		byteTs := []byte(fmt.Sprintf("%d", *(m.Timestamp)/1000/1000/1000))
 
 		r[(7 * i)] = m.Name
 		r[(7*i)+1] = m.Metadata.Tags
-		r[(7*i)+2] = &byteForSpace
-		r[(7*i)+3] = m.Value
-		r[(7*i)+4] = &byteForSpace
-		r[(7*i)+5] = &byteTs
-		r[(7*i)+6] = &byteForLineReturn
+		r[(7*i)+2] = m.Tags
+		r[(7*i)+3] = &byteForSpace
+		r[(7*i)+4] = m.Value
+		r[(7*i)+5] = &byteForSpace
+		r[(7*i)+6] = &byteTs
+		r[(7*i)+7] = &byteForLineReturn
 	}
 
 	return &r
@@ -44,7 +45,7 @@ func (f *carbon) FormatData(metrics *[]*metric.Metric) *[]*[]byte {
 // https://graphite.readthedocs.io/en/latest/tags.html
 func (f *carbon) FormatTags(tags *string) *[]byte {
 	if len(*tags) == 0 {
-		byteStr := []byte{}
+		byteStr := []byte("")
 		return &byteStr
 	}
 

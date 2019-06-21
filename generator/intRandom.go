@@ -14,6 +14,7 @@ import (
 
 type intRandom struct {
 	name       *[]byte
+	tags       *[]byte
 	sharedData *intRandomSharedData
 }
 
@@ -93,10 +94,11 @@ func NewIntRandomGenerator(config CLIConfig, tags *[]byte, f *formatter.Formatte
 }
 
 // Clone the current generator into a new struct with the current value for value and the same pointer for sharedData
-func (g intRandom) Clone(newName string) Generator {
+func (g intRandom) Clone(newName string, specificTags *[]byte) Generator {
 	newg := intRandom{sharedData: g.sharedData}
 	newNameBytes := []byte(newName)
 	newg.name = &newNameBytes
+	newg.tags = specificTags
 	return &newg
 }
 
@@ -128,6 +130,7 @@ func (g *intRandom) GenerateMetric() *metric.Metric {
 			Metadata:  g.sharedData.metadata,
 			Name:      g.name,
 			Value:     g.sharedData.cache[randomInt-g.sharedData.min],
+			Tags:      g.tags,
 			Timestamp: &timestamp}
 
 		return retMetric
@@ -138,6 +141,7 @@ func (g *intRandom) GenerateMetric() *metric.Metric {
 		Metadata:  g.sharedData.metadata,
 		Name:      g.name,
 		Value:     &byteArr,
+		Tags:      g.tags,
 		Timestamp: &timestamp}
 
 	return retMetric

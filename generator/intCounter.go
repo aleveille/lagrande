@@ -14,6 +14,7 @@ import (
 type intCounter struct {
 	name       *[]byte
 	value      int
+	tags       *[]byte
 	sharedData *intCounterSharedData
 }
 
@@ -126,10 +127,11 @@ func NewIntCounterGenerator(config CLIConfig, tags *[]byte, f *formatter.Formatt
 }
 
 // Clone the current generator into a new struct with the current value for value and the same pointer for sharedData
-func (g intCounter) Clone(newName string) Generator {
+func (g intCounter) Clone(newName string, specificTags *[]byte) Generator {
 	newg := intCounter{value: g.value, sharedData: g.sharedData}
 	newNameBytes := []byte(newName)
 	newg.name = &newNameBytes
+	newg.tags = specificTags
 	return &newg
 }
 
@@ -175,6 +177,7 @@ func (g *intCounter) GenerateMetric() *metric.Metric {
 			Metadata:  g.sharedData.metadata,
 			Name:      g.name,
 			Value:     g.sharedData.cache[0],
+			Tags:      g.tags,
 			Timestamp: &timestamp,
 		}
 	} else { // If counter value, first check if the cache was initialized
@@ -188,6 +191,7 @@ func (g *intCounter) GenerateMetric() *metric.Metric {
 				Metadata:  g.sharedData.metadata,
 				Name:      g.name,
 				Value:     g.sharedData.cache[(g.value - g.sharedData.min)],
+				Tags:      g.tags,
 				Timestamp: &timestamp,
 			}
 		} else { // If the cache is not initialize, create a metric without cache
@@ -196,6 +200,7 @@ func (g *intCounter) GenerateMetric() *metric.Metric {
 				Metadata:  g.sharedData.metadata,
 				Name:      g.name,
 				Value:     byteArr,
+				Tags:      g.tags,
 				Timestamp: &timestamp}
 		}
 

@@ -54,7 +54,6 @@ var (
 	workersIntervalDuration time.Duration
 	sharedTags              string
 	workersTags             string
-	metricsTags             string
 
 	localFormatter        formatter.Formatter
 	stringPid             string
@@ -92,8 +91,8 @@ func init() {
 	flag.BoolVar(&dryRun, "dry-run", false, "Don't send any metrics")
 	flag.StringVar(&interval, "interval", "1s", "Generate metrics every X unit of time, must be a > 0 Go Duration")
 	flag.StringVar(&nodeName, "nodeName", hostname, "")
-	flag.StringVar(&metricNamespacePrefix, "metricNamespacePrefix", "lagrande.", "How to namespace metrics. Eg: 'lagrande.mymetric'. Support text and placeholders: NODENAME, WORKERNUM, WORKERFULLNAME")
-	flag.StringVar(&metricNamespaceSuffix, "metricNamespaceSuffix", "-WORKERNUM", "How to namespace metrics. Eg: 'mymetric-6'. Support text and placeholders: NODENAME, WORKERNUM, WORKERFULLNAME")
+	flag.StringVar(&metricNamespacePrefix, "metricNamespacePrefix", "lagrande.", "How to namespace metrics. Eg: 'lagrande.mymetric'. Support text and placeholders: NODENAME, PID, WORKERNUM, WORKERFULLNAME")
+	flag.StringVar(&metricNamespaceSuffix, "metricNamespaceSuffix", "-WORKERNUM", "How to namespace metrics. Eg: 'mymetric-6'. Support text and placeholders: NODENAME, PID, WORKERNUM, WORKERFULLNAME")
 	flag.StringVar(&tags, "tags", "", "Comma-delimited list of tags of format name=value. Support placeholders: NODENAME, PID, WORKERNUM, WORKERFULLNAME, METRICNAME") // If defaulting to 'node=NODENAME,process=lagrande,thread=WORKERFULLNAME', make sure it plays nice with TSDB that don't support tags
 	flag.BoolVar(&versionFlag, "version", false, "Print version information")
 	flag.IntVar(&workersCount, "workers", 10, "Number of parallel workers that will send metrics")
@@ -187,6 +186,8 @@ func processCliConfiguration() error {
 	// TODO validate tags string
 	metricNamespacePrefix = strings.ReplaceAll(metricNamespacePrefix, "NODENAME", hostname)
 	metricNamespaceSuffix = strings.ReplaceAll(metricNamespaceSuffix, "NODENAME", hostname)
+	metricNamespacePrefix = strings.ReplaceAll(metricNamespacePrefix, "PID", stringPid)
+	metricNamespaceSuffix = strings.ReplaceAll(metricNamespaceSuffix, "PID", stringPid)
 
 	err = processGenerators()
 	if err != nil {
@@ -276,12 +277,10 @@ func processTags() error {
 	// METRICNAME will be saved into metricsTags
 	// Anything else will be saved into sharedTags
 	tags = strings.ReplaceAll(tags, "NODENAME", hostname)
-	tags = strings.ReplaceAll(tags, "PID", strconv.Itoa(os.Getgid()))
+	tags = strings.ReplaceAll(tags, "PID", stringPid)
 
 	for _, m := range tagTokenizerRE.FindAllString(tags, -1) {
-		if strings.Contains(m, "METRICNAME") {
-			appendTag(&metricsTags, &m)
-		} else if strings.Contains(m, "WORKERNUM") || strings.Contains(m, "WORKERFULLNAME") {
+		if strings.Contains(m, "WORKERNUM") || strings.Contains(m, "WORKERFULLNAME") || strings.Contains(m, "METRICNAME") {
 			appendTag(&workersTags, &m)
 		} else {
 			appendTag(&sharedTags, &m)
@@ -320,15 +319,15 @@ func processGenerators() error {
 
 		switch generatorName {
 		case "counterInt":
-			generatorsArr[i], err = generator.NewIntCounterGenerator(generator.CLIConfig{Args: cliArguments}, localFormatter.FormatTags(&tags), &localFormatter)
+			generatorsArr[i], err = generator.NewIntCounterGenerator(generator.CLIConfig{Args: cliArguments}, localFormatter.FormatTags(&sharedTags), &localFormatter)
 		case "counterFloat":
-			generatorsArr[i], err = generator.NewFloatCounterGenerator(generator.CLIConfig{Args: cliArguments}, localFormatter.FormatTags(&tags), &localFormatter)
+			generatorsArr[i], err = generator.NewFloatCounterGenerator(generator.CLIConfig{Args: cliArguments}, localFormatter.FormatTags(&sharedTags), &localFormatter)
 		case "latency":
-			generatorsArr[i], err = generator.NewLatencyDistributionGenerator(generator.CLIConfig{Args: cliArguments}, localFormatter.FormatTags(&tags), &localFormatter)
+			generatorsArr[i], err = generator.NewLatencyDistributionGenerator(generator.CLIConfig{Args: cliArguments}, localFormatter.FormatTags(&sharedTags), &localFormatter)
 		case "randomInt":
-			generatorsArr[i], err = generator.NewIntRandomGenerator(generator.CLIConfig{Args: cliArguments}, localFormatter.FormatTags(&tags), &localFormatter)
+			generatorsArr[i], err = generator.NewIntRandomGenerator(generator.CLIConfig{Args: cliArguments}, localFormatter.FormatTags(&sharedTags), &localFormatter)
 		case "randomFloat":
-			generatorsArr[i], err = generator.NewFloatRandomGenerator(generator.CLIConfig{Args: cliArguments}, localFormatter.FormatTags(&tags), &localFormatter)
+			generatorsArr[i], err = generator.NewFloatRandomGenerator(generator.CLIConfig{Args: cliArguments}, localFormatter.FormatTags(&sharedTags), &localFormatter)
 		default:
 			return errors.New("Invalid generatorName in the profile string, please refer to the doc")
 		}
@@ -402,8 +401,8 @@ func spawnWorker(id int, statsChan chan<- emissionStat) {
 	workerMetricNamespaceSuffix = replaceOnlyIfRequired(workerMetricNamespaceSuffix, "WORKERNUM", strconv.Itoa(id))
 	workerMetricNamespaceSuffix = replaceOnlyIfRequired(workerMetricNamespaceSuffix, "WORKERFULLNAME", workerFullname)
 
-	workerTags := &workersTags
-	workerTags = replaceOnlyIfRequired(workerTags, "WORKERNUM", strconv.Itoa(id))
+	var workerTags *string
+	workerTags = replaceOnlyIfRequired(&workersTags, "WORKERNUM", strconv.Itoa(id))
 	workerTags = replaceOnlyIfRequired(workerTags, "WORKERFULLNAME", workerFullname)
 
 	var workerPublisher publisher.Publisher
@@ -447,7 +446,7 @@ func spawnWorker(id int, statsChan chan<- emissionStat) {
 		}
 	}
 
-	workerGeneratorsArr := cloneDefaultGenerators(workerMetricNamespacePrefix, workerMetricNamespaceSuffix)
+	workerGeneratorsArr := cloneDefaultGenerators(workerMetricNamespacePrefix, workerMetricNamespaceSuffix, workerTags)
 
 	var metricsSucessfullyTotal int64
 	var metricsUnsucessfullyTotal int64
@@ -499,12 +498,14 @@ func spawnWorker(id int, statsChan chan<- emissionStat) {
 	}
 }
 
-func cloneDefaultGenerators(workerMetricNamespacePrefix *string, workerMetricNamespaceSuffix *string) []generator.Generator {
+func cloneDefaultGenerators(workerMetricNamespacePrefix *string, workerMetricNamespaceSuffix *string, workerTags *string) []generator.Generator {
 	var workerGeneratorsArr []generator.Generator
 	workerGeneratorsArr = make([]generator.Generator, len(generatorsArr), len(generatorsArr))
 	for i, gen := range generatorsArr {
 		metricName := fmt.Sprintf("%s%s%s", *workerMetricNamespacePrefix, gen.GetName(), *workerMetricNamespaceSuffix)
-		workerGeneratorsArr[i] = gen.Clone(metricName)
+
+		workerMetricTags := replaceOnlyIfRequired(workerTags, "METRICNAME", metricName)
+		workerGeneratorsArr[i] = gen.Clone(metricName, localFormatter.FormatTags(workerMetricTags))
 	}
 
 	return workerGeneratorsArr

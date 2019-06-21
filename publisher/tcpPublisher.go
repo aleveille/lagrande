@@ -41,15 +41,17 @@ func (p *tcpPublisher) PublishBytes(byteArrays *[]*[]byte) error {
 	p.conn.SetWriteDeadline(time.Now().Add(400 * time.Millisecond))
 
 	for _, bArr := range *byteArrays {
-		_, err := p.conn.Write(*bArr)
-		if err != nil {
-			closeErr := p.conn.Close()
-			if closeErr != nil {
-				log.Errorf("Error closing tcp connection to %s:\n%s", p.endpoint, closeErr)
-			}
-			p.conn = nil
+		if bArr != nil {
+			_, err := p.conn.Write(*bArr)
+			if err != nil {
+				closeErr := p.conn.Close()
+				if closeErr != nil {
+					log.Errorf("Error closing tcp connection to %s:\n%s", p.endpoint, closeErr)
+				}
+				p.conn = nil
 
-			return err
+				return err
+			}
 		}
 	}
 

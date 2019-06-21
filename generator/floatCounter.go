@@ -13,6 +13,7 @@ import (
 type floatCounter struct {
 	name       *[]byte
 	value      float64
+	tags       *[]byte
 	sharedData *floatCounterSharedData
 }
 
@@ -112,10 +113,11 @@ func NewFloatCounterGenerator(config CLIConfig, tags *[]byte, f *formatter.Forma
 }
 
 // Clone the current generator into a new struct with the current value for value and the same pointer for sharedData
-func (g floatCounter) Clone(newName string) Generator {
+func (g floatCounter) Clone(newName string, specificTags *[]byte) Generator {
 	newg := floatCounter{value: g.value, sharedData: g.sharedData}
 	newNameBytes := []byte(newName)
 	newg.name = &newNameBytes
+	newg.tags = specificTags
 	return &newg
 }
 
@@ -160,6 +162,7 @@ func (g *floatCounter) GenerateMetric() *metric.Metric {
 		Metadata:  g.sharedData.metadata,
 		Name:      g.name,
 		Value:     float64ToByteArrPtr(g.value),
+		Tags:      g.tags,
 		Timestamp: &timestamp,
 	}
 
