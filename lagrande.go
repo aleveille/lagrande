@@ -343,19 +343,25 @@ func processGenerators() error {
 func printConfig() {
 	// Configuration output
 	log.Infof("Launching lagrande on %s, PID %s", hostname, stringPid)
-	log.Info("Configuration: ")
-	log.Infof("\tFormat: %s", format)
-	log.Infof("\tProtocol: %s", protocol)
 	if dryRun {
 		log.Info("\tDRY-RUN: no metrics will actually be sent")
-	} else {
-		log.Infof("\tSend interval: %s", interval)
 	}
-	log.Infof("\tWorkers: %d", workersCount)
-	log.Infof("\tWorkers start interval: %s", workersInterval)
+	log.Info("Configuration:")
+	if !dryRun {
+		log.Infof("\tEndpoint:")
+		log.Infof("\t\tAddress: %s", endpoint)
+		log.Infof("\t\tProtocol: %s", protocol)
+		log.Infof("\t\tFormat: %s", format)
+	}
+	log.Infof("\tWorkers")
+	log.Infof("\t\tCount: %d", workersCount)
+	log.Infof("\t\tStart interval: %s", workersInterval)
+	if !dryRun {
+		log.Infof("\t\tSend interval: %s", interval)
+	}
 	log.Infof("\tEach worker will generate %d time series:", len(generatorsArr))
 	for _, gen := range generatorsArr {
-		log.Infof("\t  - %s", gen.ToString())
+		log.Infof("\t\t- %s", gen.ToString())
 	}
 }
 

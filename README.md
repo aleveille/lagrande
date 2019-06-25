@@ -24,7 +24,7 @@ Lagrande is a load-testing tool for your TSDB. It is written in Go and it was de
 First start Graphite and Grafana containers so that you have a destination to send metrics to and a nice dashboard to plot your metrics:
 ```bash
 docker run --rm -d --name graphite -p 80:80 -p 2003-2004:2003-2004 -p 8125:8125/udp -p 8126:8126 graphiteapp/graphite-statsd
-docker run --rm -d --name=grafana -p 3000:3000 grafana/grafana
+docker run --rm -d --name grafana -p 3000:3000 grafana/grafana
 ```
 
 Then grab one of the pre-built [releases](#pre-built-binary-releases), move it to one of the folders in your `$PATH` and just launch it: `lagrande`.
@@ -138,12 +138,12 @@ lagrande -profile 'counterInt={name: staticValue, value: 42, increment: 0}, coun
 
 **TSDB:**
 * Graphite: `docker run --rm -d --name graphite -p 80:80 -p 2003-2004:2003-2004 -p 8125:8125/udp -p 8126:8126 graphiteapp/graphite-statsd`
-* InfluxDB: `docker run --rm -d --name=influxdb -p 8086:8086 influxdb`
+* InfluxDB: `docker run --rm -d --name influxdb -p 8086:8086 influxdb`
 * IRONdb: `docker run --rm -d --name irondb -p 2003-2004:2003-2004 -p 8112:8112 irondb/irondb`
 * M3DB: `docker run --rm -d --name m3db -p 7201:7201 -p 7203:7203 -p 9003:9003 -v $HOME/tmp/m3db_data:/var/lib/m3db --privileged quay.io/m3db/m3dbnode:latest`
 
 **Support tooling:**
-* Grafana: `docker run --rm -d --name=grafana -p 3000:3000 grafana/grafana`
+* Grafana: `docker run --rm -d --name grafana -p 3000:3000 grafana/grafana`
 
 # Contributing
 
