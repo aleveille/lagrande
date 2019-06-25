@@ -26,9 +26,6 @@ func (f *carbon) FormatData(metrics *[]*metric.Metric) *[]*[]byte {
 	r := make([]*[]byte, 8*len(*metrics))
 
 	for i, m := range *metrics {
-		if len(*metrics) > 1 {
-			fmt.Println("More than one metric at a time")
-		}
 		byteTs := []byte(fmt.Sprintf("%d", *(m.Timestamp)/1000/1000/1000))
 
 		r[(8 * i)] = m.Name
