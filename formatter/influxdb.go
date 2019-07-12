@@ -22,24 +22,19 @@ func NewInfluxdbFormatter() Formatter {
 // Format according to InfluxDB Line Protocol:
 // <measurement>[,<tag-key>=<tag-value>...] <field-key>=<field-value>[,<field2-key>=<field2-value>...] [unix-nano-timestamp]
 func (f *influxdb) FormatData(metrics *[]*metric.Metric) *[]*[]byte {
-	r := make([]*[]byte, 4*len(*metrics)+4)
+	r := make([]*[]byte, 8*len(*metrics))
 
-	fixedName := []byte("lagrande") //TODO The first name is the measurment name (Worker name or something?) actually
-	r[0] = &fixedName
-	r[1] = (*metrics)[0].Metadata.Tags //TODO Influx tags are per measurement, not per "metric"
-	r[2] = &byteForSpace
-
-	i := 0
-	for ; i < len(*metrics); i++ {
-		r[(4*i)+3] = (*metrics)[i].Name
-		r[(4*i)+3+1] = &byteForEqual
-		r[(4*i)+3+2] = (*metrics)[i].Value
-		r[(4*i)+3+3] = &byteForComma // The last comma will be overriden by a space
+	for i, metric := range *metrics {
+		r[(4 * i)] = metric.Name
+		r[(4*i)+1] = metric.Tags
+		r[(4*i)+2] = metric.Metadata.Tags
+		r[(4*i)+3] = &byteForSpace
+		r[(4*i)+4] = &bytesForValueEquals
+		r[(4*i)+5] = (*metrics)[i].Value
+		r[(4*i)+6] = &byteForSpace
+		byteTs := []byte(fmt.Sprintf("%d", *((*metrics)[0].Timestamp)))
+		r[(4*i)+7] = &byteTs
 	}
-
-	r[(4*i)+3-1] = &byteForSpace                                    // Overwrite the last comma
-	byteTs := []byte(fmt.Sprintf("%d", *((*metrics)[0].Timestamp))) //TODO Assuming the timestamp of the first metric (InfluxDB timestamp are per measurement, not per "metric")
-	r[(4*i)+3] = &byteTs
 
 	return &r
 }
@@ -47,6 +42,10 @@ func (f *influxdb) FormatData(metrics *[]*metric.Metric) *[]*[]byte {
 // Format a series of comma-delimited strings of key=value into InfluxDB tag format: ,<tag-key>=<tag-value>,...
 // https://docs.influxdata.com/influxdb/v1.7/introduction/getting-started/
 func (f *influxdb) FormatTags(tags *string) *[]byte {
-	byteStr := []byte(fmt.Sprintf(",%s", *tags))
-	return &byteStr
+	if *tags != "" {
+		byteStr := []byte(fmt.Sprintf(",%s", *tags))
+		return &byteStr
+	}
+
+	return &byteForEmpty
 }

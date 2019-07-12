@@ -1,5 +1,6 @@
 package formatter
 
+var byteForEmpty = []byte("")
 var byteForSpace = []byte(" ")
 var byteForEqual = []byte("=")
 var byteForComma = []byte(",")
@@ -15,4 +16,5 @@ var bytesForQuoteCommaIdColonQuote = []byte("\",\"id\":\"")
 var bytesForCommaTimestampColon = []byte(",\"timestamp\":")
 var bytesForCommaDatapointColonTimestampColon = []byte(",\"datapoint\":{\"timestamp\":")
 var bytesForCommaValueColon = []byte(",\"value\":")
+var bytesForValueEquals = []byte("value=")
 var bytesForCommaMetricsColon = []byte(",\"metrics\":")
