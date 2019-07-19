@@ -22,18 +22,19 @@ func NewInfluxdbFormatter() Formatter {
 // Format according to InfluxDB Line Protocol:
 // <measurement>[,<tag-key>=<tag-value>...] <field-key>=<field-value>[,<field2-key>=<field2-value>...] [unix-nano-timestamp]
 func (f *influxdb) FormatData(metrics *[]*metric.Metric) *[]*[]byte {
-	r := make([]*[]byte, 8*len(*metrics))
+	r := make([]*[]byte, 9*len(*metrics))
 
 	for i, metric := range *metrics {
-		r[(4 * i)] = metric.Name
-		r[(4*i)+1] = metric.Tags
-		r[(4*i)+2] = metric.Metadata.Tags
-		r[(4*i)+3] = &byteForSpace
-		r[(4*i)+4] = &bytesForValueEquals
-		r[(4*i)+5] = (*metrics)[i].Value
-		r[(4*i)+6] = &byteForSpace
-		byteTs := []byte(fmt.Sprintf("%d", *((*metrics)[0].Timestamp)))
-		r[(4*i)+7] = &byteTs
+		r[(9 * i)] = metric.Name
+		r[(9*i)+1] = metric.Tags
+		r[(9*i)+2] = metric.Metadata.Tags
+		r[(9*i)+3] = &byteForSpace
+		r[(9*i)+4] = &bytesForValueEquals
+		r[(9*i)+5] = metric.Value
+		r[(9*i)+6] = &byteForSpace
+		byteTs := []byte(fmt.Sprintf("%d", *metric.Timestamp))
+		r[(9*i)+7] = &byteTs
+		r[(9*i)+8] = &byteForLineReturn
 	}
 
 	return &r
