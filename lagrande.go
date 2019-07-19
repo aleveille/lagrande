@@ -90,7 +90,6 @@ func init() {
 	flag.StringVar(&logLevel, "logLevel", "info", "Log level: \"trace\", \"debug\", \"info\", \"warn\", \"error\", \"fatal\", \"panic\"")
 	flag.BoolVar(&dryRun, "dry-run", false, "Don't send any metrics")
 	flag.StringVar(&interval, "interval", "1s", "Generate metrics every X unit of time, must be a > 0 Go Duration")
-	flag.StringVar(&nodeName, "nodeName", hostname, "")
 	flag.StringVar(&metricNamespacePrefix, "metricNamespacePrefix", "lagrande.", "How to namespace metrics. Eg: 'lagrande.mymetric'. Support text and placeholders: NODENAME, PID, WORKERNUM, WORKERFULLNAME")
 	flag.StringVar(&metricNamespaceSuffix, "metricNamespaceSuffix", "-WORKERNUM", "How to namespace metrics. Eg: 'mymetric-6'. Support text and placeholders: NODENAME, PID, WORKERNUM, WORKERFULLNAME")
 	flag.StringVar(&tags, "tags", "", "Comma-delimited list of tags of format name=value. Support placeholders: NODENAME, PID, WORKERNUM, WORKERFULLNAME, METRICNAME") // If defaulting to 'node=NODENAME,process=lagrande,thread=WORKERFULLNAME', make sure it plays nice with TSDB that don't support tags
