@@ -84,8 +84,8 @@ func init() {
 	stringPid = strconv.Itoa(os.Getpid())
 
 	flag.StringVar(&endpoint, "endpoint", "", "Endpoint to publish metrics to")
-	flag.StringVar(&format, "format", "carbon", "Publish format: \"atlas\",\"carbon\", \"influxdb\" or \"m3db\"")
-	flag.StringVar(&protocol, "protocol", "auto", "Publish protocol: \"auto\", \"http\", \"tcp\", or \"udp\" (not all format support all protocol!)")
+	flag.StringVar(&format, "format", "carbon", "Publish format: \"atlas\",\"carbon\", \"influxdb\", \"m3db\" or \"timescale\"")
+	flag.StringVar(&protocol, "protocol", "auto", "Publish protocol: \"auto\", \"http\", \"tcp\" or \"udp\". NB: not all format support all protocol!")
 	flag.StringVar(&profile, "profile", "counterInt={name: fixedValue, value: 10, increment: 0},randomInt={name: jiggle, min: 50, max: 75}", "")
 	flag.StringVar(&logLevel, "logLevel", "info", "Log level: \"trace\", \"debug\", \"info\", \"warn\", \"error\", \"fatal\", \"panic\"")
 	flag.BoolVar(&dryRun, "dry-run", false, "Don't send any metrics")
@@ -167,6 +167,10 @@ func processCliConfiguration() error {
 		return err
 	}
 
+	if dryRun {
+		protocol = "dry-run"
+	}
+
 	intervalDuration, err = time.ParseDuration(interval)
 	if err != nil || intervalDuration.Nanoseconds() <= int64(0) {
 		return errors.New("Invalid interval specified. Make sure it's a duration greater than 0 and parsable by Go library: https://golang.org/pkg/time/#ParseDuration")
@@ -197,8 +201,13 @@ func processCliConfiguration() error {
 }
 
 func processFormatAndProtocol() error {
-	if protocol != "auto" && protocol != "tcp" && protocol != "udp" && protocol != "http" {
+	if protocol != "auto" && protocol != "tcp" && protocol != "udp" && protocol != "http" && protocol != "null" && protocol != "log" {
 		return errors.New("The specified protocol is invalid")
+	}
+
+	if protocol == "null" || protocol == "log" {
+		// Todo: validate format anyway
+		return nil
 	}
 
 	// Validate format --> Protocol combinations and initialize formatters accordingly
@@ -254,6 +263,16 @@ func processFormatAndProtocol() error {
 		}
 		if protocol == "auto" {
 			protocol = "http"
+		}
+	case "timescale":
+		if protocol != "auto" {
+			return errors.New("Only the \"auto\" protocol (PostgreSQL:Timescale) is supported with Timescale")
+		}
+		protocol = "timescale"
+		localFormatter = formatter.NewTimescaleFormatter()
+
+		if len(endpoint) == 0 {
+			endpoint = "postgres://postgres:postgresqltimescaletests@localhost/tsdb?sslmode=disable"
 		}
 	default:
 		return errors.New("The specified format is invalid")
@@ -418,14 +437,14 @@ func spawnWorker(id int, statsChan chan<- emissionStat) {
 		case "http":
 			workerPublisher = publisher.NewHttpPublisher(endpoint)
 		case "dry-run":
-			workerPublisher = publisher.NewNullPublisher(endpoint)
+			workerPublisher = publisher.NewLogPublisher("na")
 		}
 	case "carbon":
 		switch protocol {
 		case "tcp":
 			workerPublisher = publisher.NewTcpPublisher(endpoint)
 		case "dry-run":
-			workerPublisher = publisher.NewNullPublisher(endpoint)
+			workerPublisher = publisher.NewLogPublisher("na")
 		}
 	case "carbon-pickle":
 		log.Fatal("Not supported yet")
@@ -433,21 +452,28 @@ func spawnWorker(id int, statsChan chan<- emissionStat) {
 		case "tcp":
 			workerPublisher = publisher.NewTcpPublisher(endpoint)
 		case "dry-run":
-			workerPublisher = publisher.NewNullPublisher(endpoint)
+			workerPublisher = publisher.NewLogPublisher("na")
 		}
 	case "influxdb":
 		switch protocol {
 		case "http":
 			workerPublisher = publisher.NewHttpPublisher(endpoint)
 		case "dry-run":
-			workerPublisher = publisher.NewNullPublisher(endpoint)
+			workerPublisher = publisher.NewLogPublisher("na")
 		}
 	case "m3db":
 		switch protocol {
 		case "http":
 			workerPublisher = publisher.NewHttpPublisher(endpoint)
 		case "dry-run":
-			workerPublisher = publisher.NewNullPublisher(endpoint)
+			workerPublisher = publisher.NewLogPublisher("na")
+		}
+	case "timescale":
+		switch protocol {
+		case "timescale":
+			workerPublisher = publisher.NewTimescalePublisher(endpoint)
+		case "dry-run":
+			workerPublisher = publisher.NewLogPublisher("na")
 		}
 	}
 
@@ -472,10 +498,15 @@ func spawnWorker(id int, statsChan chan<- emissionStat) {
 				metricArr[i] = gen.GenerateMetric()
 			}
 
+			var publishErr error
 			formattedMetric := localFormatter.FormatData(&metricArr)
-			err := workerPublisher.PublishBytes(formattedMetric)
+			if format == "timescale" {
+				publishErr = workerPublisher.PublishMetrics(&metricArr)
+			} else {
+				publishErr = workerPublisher.PublishBytes(formattedMetric)
+			}
 
-			if err != nil {
+			if publishErr != nil {
 				metricsUnsucessfullyStats++
 			} else {
 				metricsSucessfullyStats++

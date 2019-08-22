@@ -2,10 +2,13 @@ package publisher
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/aleveille/lagrande/metric"
 )
 
 type httpPublisher struct {
@@ -31,6 +34,11 @@ func NewHttpPublisher(endpoint string) Publisher {
 	}
 
 	return &httpPublisher{httpClient: httpClient, endpoint: endpoint}
+}
+
+// PublishMetrics is unimplemented for httpPublisher
+func (p *httpPublisher) PublishMetrics(metrics *[]*metric.Metric) error {
+	return errors.New("PublishMetrics is not supported for HTTP publisher yet")
 }
 
 func (p *httpPublisher) PublishBytes(byteArrays *[]*[]byte) error {

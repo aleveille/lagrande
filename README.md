@@ -6,7 +6,10 @@ Lagrande is a load-testing tool for your TSDB. It is written in Go and it was de
 * [Atlas](https://github.com/Netflix/atlas)
 * [Carbon plaintext protocol](https://graphite.readthedocs.io/en/latest/feeding-carbon.html#the-plaintext-protocol)
 * [InfluxDB](https://www.influxdata.com/products/influxdb-overview/)
+* [IRONdb](https://www.irondb.io/)
 * [M3DB](https://m3db.io/)
+* [Timescale](https://www.timescale.com/)
+* [VictoriaMetrics](https://victoriametrics.com/)
 
 ## Kinds of metrics:
 * Integer fixed value
@@ -141,6 +144,8 @@ lagrande -profile 'counterInt={name: staticValue, value: 42, increment: 0}, coun
 * InfluxDB: `docker run --rm -d --name influxdb -p 8086:8086 influxdb`
 * IRONdb: `docker run --rm -d --name irondb -p 2003-2004:2003-2004 -p 8112:8112 irondb/irondb`
 * M3DB: `docker run --rm -d --name m3db -p 7201:7201 -p 7203:7203 -p 9003:9003 -v $HOME/tmp/m3db_data:/var/lib/m3db --privileged quay.io/m3db/m3dbnode:latest`
+* Timescale: `docker run --rm -d --name timescaledb -p 5432:5432 -e POSTGRES_PASSWORD=password timescale/timescaledb:latest-pg11`
+* VictoriaMetrics: `docker run --rm -d --name victoriametrics -p 2003:2003 -p 8428:8428 victoriametrics/victoria-metrics -graphiteListenAddr :2003`
 
 **Support tooling:**
 * Grafana: `docker run --rm -d --name grafana -p 3000:3000 grafana/grafana`
