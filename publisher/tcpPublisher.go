@@ -5,6 +5,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/aleveille/lagrande/metric"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -28,6 +29,11 @@ func (p *tcpPublisher) connect() {
 	} else {
 		p.conn = localConn
 	}
+}
+
+// PublishMetrics is unimplemented for tcpPublisher
+func (p *tcpPublisher) PublishMetrics(metrics *[]*metric.Metric) error {
+	return errors.New("PublishMetrics is not supported for TCP publisher yet")
 }
 
 func (p *tcpPublisher) PublishBytes(byteArrays *[]*[]byte) error {
